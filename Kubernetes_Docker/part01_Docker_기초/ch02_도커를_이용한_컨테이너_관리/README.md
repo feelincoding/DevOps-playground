@@ -148,8 +148,34 @@ docker run -d --name my-nginx nginx
 docker ps
 docker exec my-nginx env
 docker exec -i -t my-nginx bash # -i: 표준 입력, -t: 터미널, 세션 직접 연결해서 bash로 작업하겠다.
+docker run -d -p 80:80 nginx # 모든 포트의 80번에서 80으로 접근을 허용
+docker run -d -p 80 nginx # 특정 포트 번호에서 80으로 접근을 허용
+curl localhost:xxxxx
+docker rm -f "id"
+docker run -d -p 127.0.0.1:80:80 nginx # 특정 ip에서 80번 포트에서 80으로 접근을 허용
+docker ps -a
+curl localhost:80
+```
+
+# 06 도커 네트워크 구조
+
+- veth: virtual ethernet
+- eth: ethernet
+- expose: 그저 문서화 용도
+  - docker run -d --expose 80 nginx
+  - 매핑을 의미하는 화살표 표시 없음
+- publish: 실제 포트를 바인딩
+  - docker run -d -p 80 nginx
+
+```bash
+docker run -d -p 80:80 nginx # 모든 포트의 80번에서 80으로 접근을 허용
+docker run -d -p 80 nginx # 특정 포트 번호에서 80으로 접근을 허용
+curl localhost:xxxxx
+docker rm -f "id"
+docker run -d -p 127.0.0.1:80:80 nginx # 특정 ip에서 80번 포트에서 80으로 접근을 허용
+docker ps -a
+curl localhost:80
+docker run -d --expose 80 --name nginx-expose nginx
 ```
 
 # # 기타
-- veth: virtual ethernet
-- eth: ethernet
