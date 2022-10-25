@@ -59,11 +59,97 @@
 tf output
 ssh -i ~/credentails/tedioabs/fastcampus.pem ubuntu@13.125.233.131
 docker -vs
-docker ps
-docker ps -a
+docker ps # 현재 실행중인 컨테이너 확인
+docker ps -a # 전체 컨테이너 상태 확인
+# docker inspect [container] # 컨테이너의 상세 정보 확인
 docker run nginx
 ctrl + c
 
 docker create nginx
 docker start "name or id"
+#-----------------------
+docker run ubuntu:focal
+docker ps -a
+docker run -i -t ubuntu:focal
+docker ps
+docker run -d nginx
+docker run -d --name my-nignx nginx
+
+docker run -p 80:80 -d nginx
+docker ps
+curl localhost:80
+docker run ubuntu:focal id
+docker ps -a
+
+docker inspect 691a64c23a9f
+docker pause 691a64c23a9f # 일시 중지
+docker unpause 691a64c23a9f # 재개
+docker stop 691a64c23a9f # 중지, sigterm 시그널 전달
+# docker stop $(docker ps -a -q) # 모든 컨테이너 중지, 괄호 안에 명령어를 전달하겠다.
+docker kill 691a64c23a9f # 강제 종료, sigkill 시그널 전달
+docker ps -a -q # 모든 컨테이너 id 출력
+
+docker run -d nginx
+docker ps
+docker rm "id"
+docker rm -f "id" # 강제 삭제
+docker ps -a
+docker container prune # 중지된 컨테이너 삭제
+docker ps -a
+
 ```
+
+# 03 도커 엔트리 포인트와 커맨드
+
+## 엔트리 포인트
+
+- 도커 컨테이너가 실행할 때 고정적으로 실행되는 스크립트 혹은 명령어
+- 생략 가능, 생략될 경우 커맨드에 지정된 명령어로 수행
+
+## 커맨드
+
+- 도커 컨테이너가 실행할 때 수행할 명령어 혹은 엔트리포인트에 지정된 명령어에 대한 인자 값
+
+-> 실제 수행되는 컨테이너 명령어 : [엔트리포인트] [커맨드]
+
+```bash
+docker run ubuntu:focal
+docker ps
+docker ps -a
+docker inspect "id"
+docker run --entrypoint sh ubuntu:focal
+docker ps -a
+docker run --entrypoint sh -i -t ubuntu:focal
+docker run --entrypoint echo ubuntu:focal hello world
+docker inspect "id"
+```
+
+-> 커스터마이징의 의미가 있다.
+
+# 04 환경변수
+
+```bash
+docker run 0i -t -e MY_HOST=fastcampus.com ubuntu:focal bash
+echo $MY_HOST
+env
+cat sample.env
+docker run -i -t --env-file ./sample.env ubuntu:focal env
+```
+
+# 05 도커 명령어 실행
+
+## exec
+
+- 실행 중인 컨테이너에서 명령어를 실행
+- docker exec [옵션] [컨테이너명] [명령어]
+
+```bash
+docker run -d --name my-nginx nginx
+docker ps
+docker exec my-nginx env
+docker exec -i -t my-nginx bash # -i: 표준 입력, -t: 터미널, 세션 직접 연결해서 bash로 작업하겠다.
+```
+
+# # 기타
+- veth: virtual ethernet
+- eth: ethernet
