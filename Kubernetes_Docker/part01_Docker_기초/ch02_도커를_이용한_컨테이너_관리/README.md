@@ -129,7 +129,7 @@ docker inspect "id"
 # 04 환경변수
 
 ```bash
-docker run 0i -t -e MY_HOST=fastcampus.com ubuntu:focal bash
+docker run -i -t -e MY_HOST=fastcampus.com ubuntu:focal bash
 echo $MY_HOST
 env
 cat sample.env
@@ -166,6 +166,16 @@ curl localhost:80
   - 매핑을 의미하는 화살표 표시 없음
 - publish: 실제 포트를 바인딩
   - docker run -d -p 80 nginx
+- 도커 네트워크 드라이버
+  - docker -> container network model -> native drivers, remote drivers
+    - native drivers: bridge, host, none, overlay
+    - remote drivers: 3rd party plugins
+  - docker networking
+    - single host networking: bridge, host, none
+      - bridge: docker0(default), user defined
+      - none: 컨테이너가 네트워크 기능이 필요 없을 때, 보통 기본 드라이버를 네트워크 none으로 설정
+      - bridge: 사용자 정의 네트워크 만들 때 사용
+    - multi host networking: overlay
 
 ```bash
 docker run -d -p 80:80 nginx # 모든 포트의 80번에서 80으로 접근을 허용
@@ -176,6 +186,42 @@ docker run -d -p 127.0.0.1:80:80 nginx # 특정 ip에서 80번 포트에서 80�
 docker ps -a
 curl localhost:80
 docker run -d --expose 80 --name nginx-expose nginx
+docker network ls
+
+docker run -i -t --net none ubuntu:focal
+docker run -d --network=host grafana/grafana
+docker ps
+curl localhost:3000 # ps 했을 때는 3000번 포트가 열려있지 않은 것 처럼 보이지만, 실제로는 열려있음, 근데 호스트를 쓰다보니 ip는 없음
+docker inspect "id"
+docker network create --driver=bridge my-bridge-network
+docker run -d --network=my-bridge-network --net-alias=hello nginx
+docker run -d --network=my-bridge-network --net-alias=grafana grafana/grafana
+# net-alias: 브릿지 네트워크 안에서 도메인 이름을 부여할 수 있음
+docker network ls
+docker ps
+docker exec -it "grafana id" bash # grafana 컨테이너에 접속
+docker exec -it "nginx id" bash # nginx 컨테이너에 접속
+curl grafana:3000 # nginx 도메인에서 grafana 도메인으로 접속
+exit
+ifconfig
+
 ```
+
+# 07 도커 볼륨
+
+## 도커 레이어 아키텍쳐
+
+- 도커 이미지는 여러 개의 레이어로 구성
+- docker run app
+  - `read write`(container layer)
+    -  layer 6: container layer
+- docker build -t app .
+  - `read only`(image layer)
+    - layer 5: update entrypoint
+    - layer 4: source code
+    - ---> layer 1~3: 변경 없음
+    - layer 3: install in pip packages
+    - layer 2: changes in apt packages
+    - layer 1: base ubuntu layer
 
 # # 기타
