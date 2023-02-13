@@ -5,12 +5,14 @@
 ### - Client
 
 - 도커 명령어가 클라이언트 역할을 수행
+  - build, pull, run 등
 
 ### - Docker Host: 도커 엔진이 설치된 서버
 
+- 로컬이라면 내 컴표터지 뭐
 - Docker Daemon: 도커 엔진
 - Container: 도커 엔진에서 실행되는 프로세스
-- Image: 컨테이너 실행에 필요한 파일과 설정값 등을 포함하고 있는 것
+- Image: 컨테이너 실행에 필요한 파일과 설정값 등을 포함하고 있는 것, 컨테이너를 생성할 때 필요한 요소
   - 직접 build 하거나
   - pull로 땡겨 오거나
   - Registry에 저장된 이미지를 pull로 땡겨 올 수 있다.
@@ -21,6 +23,14 @@
 - 도커 이미지를 저장하는 곳
 
 ### - 도커 이미지와 컨테이너
+
+- 기본적 사이클
+
+  - 도커 파일을
+  - 빌드하면
+  - 도커 이미지가 만들어지고
+  - 런 하면
+  - 도커 컨테이너가 만들어진다
 
 - 이미지와 컨테이너는 도커에서 사용하는 가장 기본적인 단위
 - 이미지과 컨테이너는 1:N 관계
@@ -45,6 +55,10 @@
 
 # 02 컨테이너 라이프 사이클
 
+## ETC
+
+- create, run 명령어를 실행시 도커 호스트에 이미지가 없다면 자동으로 pull을 실행한다.
+
 ## 라이프 사이클
 
 - created: 컨테이너가 생성되었지만 아직 시작되지 않은 상태, create로 만듦
@@ -56,6 +70,15 @@
 # 실습
 
 ```bash
+docker run \
+-i \
+-t \ # -i와 -t를 같이 사용하면 표준 입력을 활성화하고 TTY 모드를 사용한다.->주로 쉘을 실행할 때 사용
+--rm \ # 컨테이너 종료시 자동으로 삭제
+-d \ # 백그라운드로 실행
+--name my-nginx \ # 컨테이너 이름 지정
+-p 80:80 \ # 포트 바인딩
+-v \ # 볼륨 바인딩
+
 tf output
 ssh -i ~/credentails/tedioabs/fastcampus.pem ubuntu@13.125.233.131
 docker -vs
@@ -97,6 +120,7 @@ docker ps -a
 docker container prune # 중지된 컨테이너 삭제
 docker ps -a
 
+docker stop $(docker ps -a -q)
 ```
 
 # 03 도커 엔트리 포인트와 커맨드
@@ -214,7 +238,7 @@ ifconfig
 - 도커 이미지는 여러 개의 레이어로 구성
 - docker run app
   - `read write`(container layer)
-    -  layer 6: container layer
+    - layer 6: container layer
 - docker build -t app .
   - `read only`(image layer)
     - layer 5: update entrypoint
@@ -224,4 +248,22 @@ ifconfig
     - layer 2: changes in apt packages
     - layer 1: base ubuntu layer
 
+# 08 도커 로그
+
+- docker logs "id"
+- docker logs --tail 10 "id" # 마지막 10줄만 보기
+- docker logs -f "id" # 실시간 로그 확인
+- docker logs -t "id" # 시간 표시
+- cat /var/lib/docker/containers/"id"/"id"-json.log
+- docker run \ -d \ --log-driver json-file \ --log-opt max-size=3m \ --log-opt max-file=5 \ nginx
+  - max-size: 3mb
+  - max-file: 5개
+
 # # 기타
+
+- nginx: 경량 웹 서버
+- run: 이미지 빌드할 때 실행할 명령어
+- cmd: 컨테이너가 실행될 때 실행할 명령어
+  - CMD 명령어는 해당 이미지를 컨테이너로 띄울 때 디폴트로 실행할 커맨드나, ENTRYPOINT 명령문으로 지정된 커맨드에 디폴트로 넘길 파라미터를 지정할 때 사용한다.
+- entrypoint: 컨테이너가 실행될 때 항상 실행할 명령어
+  - ENTRYPOINT ["<커맨드>","<파라미터1>","<파라미터2>"]
